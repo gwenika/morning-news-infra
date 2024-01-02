@@ -1,0 +1,56 @@
+- name: Create default 'admin' user
+  ansible.builtin.user:
+    name: admin
+    shell: /bin/bash
+
+- name: Create sudoers config file
+  ansible.builtin.file:
+    path: /etc/sudoers.d/admin
+    state: touch
+    mode: 0664
+
+- name: Disable sudo password for admin
+  ansible.builtin.copy:
+    dest: /etc/sudoers.d/admin
+    content: admin ALL=(ALL) NOPASSWD:ALL
+    mode: 0664
+
+- name: Set admin ssh key
+  ansible.posix.authorized_key:
+    user: admin
+    state: present
+    key: "{{ lookup('url', 'https://github.com/gwenika.keys', split_lines=False) }}"
+
+- name: Create SSHD config file
+  ansible.builtin.file:
+    path: /etc/ssh/sshd_config.d/default.conf
+    state: touch
+    mode: 0664
+
+- name: Configure SSHD
+  ansible.builtin.copy:
+    dest: /etc/ssh/sshd_config.d/default.conf
+    content: |
+      Port 2121
+      PermitRootLogin no
+      PasswordAuthentication no
+    mode: 0664
+  notify:
+    - Restart sshd
+
+- name: Install ufw
+  ansible.builtin.apt:
+    name: ufw
+    state: present
+    update_cache: yes
+
+- name: Enable ufw
+  community.general.ufw:
+    state: enabled
+
+- name: Allow limited access to tcp port 2121
+  community.general.ufw:
+    rule: limit
+    port: '2121'
+    proto: tcp
+
