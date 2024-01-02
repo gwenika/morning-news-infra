@@ -1,0 +1,5 @@
+- name: Morning News App Playbook
+  hosts: linode
+  become: true
+  roles:
+   - baseinstall
