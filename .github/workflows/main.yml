@@ -31,4 +31,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Run ansible-lint
+        working-directory: ./ansible
+        run: ":"
         uses: ansible/ansible-lint@main
