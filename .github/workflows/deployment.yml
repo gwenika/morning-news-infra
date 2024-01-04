@@ -1,0 +1,30 @@
+name: 'App infrastructure deployment'
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./terraform
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+      - name: Deploy app server
+        run: |
+          terraform init
+          terraform apply -auto-approve
+          SERVER_IP=$(terraform output -raw server_ip)
+          echo [linode] > ${{ github.repository }}/ansible/hosts
+          echo $SERVER_IP >> ${{ github.repository }}/ansible/hosts
+      - uses: actions/upload-artifact@v4
+        with:
+          name: hosts-artifact
+          path: ${{ github.repository }}/ansible/hosts

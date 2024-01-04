@@ -1,4 +1,4 @@
-name: 'Deploy app infrastructure'
+name: 'Static Checking'
 
 on:
   workflow_dispatch:
