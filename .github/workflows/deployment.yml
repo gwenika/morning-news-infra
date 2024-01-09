@@ -43,10 +43,13 @@ jobs:
           SERVER_IP: ${{ needs.terraform.outputs.server_ip }}
         working-directory: ./ansible
         run: echo "$SERVER_IP" >> hosts
+      - name: Provide vault password
+        working-directory: ./ansible
+        run: echo "${{ secrets.VAULT_PASS }}" > secret.txt
       - name: Apply configuration
         working-directory: ./ansible
         run: |
           export ANSIBLE_HOST_KEY_CHECKING=False
           eval $(ssh-agent -s)
           ssh-add - <<< "${{ secrets.SSH_KEY }}" 
-          ansible-playbook -i hosts -u root playbook.yml
+          ansible-playbook -i hosts -u root --vault-password-file secret.txt playbook.yml
