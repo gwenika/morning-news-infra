@@ -84,3 +84,5 @@
 - name: Create kube secret to allow access to github registry
   ansible.builtin.shell:
     cmd: kubectl create secret docker-registry dockerconfigjson-github-com --docker-server='{{ registry }}' --docker-username='{{ username }}' --docker-password='{{ token }}' --namespace='{{ namespace }}'
+  become_user: admin
+  become: true
