@@ -29,3 +29,7 @@ resource "linode_instance" "server" {
   swap_size  = 256
   private_ip = true
 }
+
+output "server_ip" {
+  value = linode_instance.server.ip_address
+}

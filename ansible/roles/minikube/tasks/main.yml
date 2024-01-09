@@ -79,7 +79,7 @@
   ansible.builtin.command: minikube start
   become_user: admin
   become: true
-  changed_when: "minikube_status.stdout or 'Running' in minikube_status.stdout"
+  changed_when: true
 
 - name: Create kube secret to allow access to github registry
   ansible.builtin.shell:
@@ -88,3 +88,4 @@
                       --docker-username='{{ username }}' \
                       --docker-password='{{ token }}' \
                       --namespace='{{ namespace }}'
+
