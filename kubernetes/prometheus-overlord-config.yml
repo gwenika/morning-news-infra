@@ -1,0 +1,54 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-conf
+  labels:
+    app: prometheus
+data:
+  rules.yml: |-
+    groups:
+    - name: example
+      rules:
+      - alert: NginxDown
+        expr: nginx_up == 0
+        for: 1m
+        labels:
+          severity: page
+        annotations:
+          summary: "Instance Nginx down"
+          description: "Nginx has been down for more than 1 minute."
+      - alert: LowSpace
+        expr: (100 - (100 * ((node_filesystem_avail_bytes{mountpoint="/",fstype!="rootfs"} )  / (node_filesystem_size_bytes{mountpoint="/",fstype!="rootfs"}) ))) > 80
+        labels:
+          severity: page
+        annotations:
+          summary: "Low space available"
+          description: "File system is more than 80% full"
+  prometheus.yml: |-
+    global:
+      scrape_interval: 15s 
+      evaluation_interval: 15s
+    alerting:
+      alertmanagers:
+        - static_configs:
+            - targets:
+                - alert-manager:9093              
+    rule_files:
+      - "rules.yml"
+    scrape_configs:
+    - job_name: 'prometheus'
+      static_configs:
+        - targets:
+          - prometheus-service:9090
+    - job_name: 'federate'
+      scrape_interval: 15s
+      honor_labels: true
+      metrics_path: '/federate'
+      params:
+        'match[]':
+          - '{job="web"}'
+          - '{job="kube-state-metrics"}'
+      static_configs:
+        - targets:
+          - 'prometheus-web-service:9090'
+          - 'prometheus-kube-service:9090'

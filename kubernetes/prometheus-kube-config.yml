@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ksm-conf
+  labels:
+    app: kube-state-metrics
+data:
+  prometheus.yml: |-
+    global:
+      scrape_interval: 15s 
+      evaluation_interval: 15s             
+    scrape_configs:
+    - job_name: kube-state-metrics
+      honor_timestamps: true
+      metrics_path: /metrics
+      scheme: http
+      static_configs:
+        - targets:
+          - kube-state-metrics.kube-system.svc.cluster.local:8080
